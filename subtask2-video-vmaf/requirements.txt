@@ -1,0 +1,8 @@
+opencv-python-headless==4.5.3.56
+numpy==1.21.2
+torch==1.9.1
+torchvision==0.10.1
+Pillow==8.3.1
+vlc==3.0.12
+git+https://github.com/xinntao/Real-ESRGAN.git
+ffmpeg-python==0.2.0

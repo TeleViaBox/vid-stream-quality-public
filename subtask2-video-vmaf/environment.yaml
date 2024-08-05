@@ -1,0 +1,5 @@
+name: leos-vehi-net-task2
+channels:
+  - conda-forge
+  - defaults
+# prefix: /home/televiabox/miniconda3/envs/leos-vehi-net-task2

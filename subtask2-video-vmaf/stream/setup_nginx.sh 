@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# 启动Nginx服务器
+nginx -c config/nginx.conf
