@@ -27,6 +27,13 @@ $$
 
 where \( R \) is the bitrate, \( C_i \) is the complexity of the \( i \)-th frame, and \( Q_i \) is the quantization parameter.
 
+### 2.2 Implementation
+The FFmpeg command used for encoding is as follows:
+
+```bash
+ffmpeg -i data/raw/input_video.mp4 -c:v libx264 -b:v 500k data/processed/output_video.mp4
+```
+
 ## 3. Video Quality Assessment with VMAF
 
 Video Multi-Method Assessment Fusion (VMAF) is an advanced perceptual video quality assessment tool developed by Netflix. VMAF combines multiple quality metrics to provide a comprehensive evaluation of video quality as perceived by human viewers.
@@ -40,6 +47,12 @@ VMAF = \sum_{j=1}^{M} w_j \times f_j(Q)
 $$
 
 where \( w_j \) are the weights, \( f_j \) are the quality metrics, and \( Q \) is the video quality vector.
+
+### 3.2 Implementation
+The VMAF evaluation is conducted using FFmpeg with the following command:
+```bash
+ffmpeg -i data/raw/input_video.mp4 -i data/processed/output_video.mp4 -lavfi libvmaf="log_path=data/logs/vmaf.json" -f null -
+```
 
 ## 4. Enhancing Video Quality with Deep Learning
 
@@ -59,6 +72,28 @@ $$
 
 where \( \hat{Y} \) is the super-resolved frame, \( G \) is the generator network, \( X \) is the low-resolution input frame, and \( \theta \) are the network parameters.
 
+### 4.3 Implementation
+The Real-ESRGAN model is implemented using the following Python script:
+
+```
+import torch
+from PIL import Image
+import numpy as np
+from basicsr.archs.rrdbnet_arch import RRDBNet
+from realesrgan import RealESRGANer
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=2)
+upsampler = RealESRGANer(scale=2, model_path='weights/RealESRGAN_x2.pth', model=model, tile=0, tile_pad=10, pre_pad=0, half=True, device=device)
+
+path_to_image = 'inputs/lr_image.png'
+image = Image.open(path_to_image).convert('RGB')
+image_np = np.array(image)
+sr_image, _ = upsampler.enhance(image_np, outscale=2)
+sr_image_pil = Image.fromarray(sr_image)
+sr_image_pil.save('results/sr_image.png')
+```
+
 ## 5. Adaptive Bitrate Streaming
 
 Adaptive bitrate streaming adjusts the quality of the video stream in real-time based on network conditions to provide the best possible viewing experience.
@@ -72,6 +107,28 @@ B_t = \frac{W_t}{W_t + D_t} \times B
 $$
 
 where \( B_t \) is the target bitrate, \( W_t \) is the available bandwidth, \( B \) is the buffer level, and \( D_t \) is the download rate.
+
+### 5.2 Implementation
+Adaptive streaming is implemented using the following script to control the streaming bitrate:
+```
+import subprocess
+
+# Push video to Nginx for streaming
+subprocess.run([
+    'ffmpeg',
+    '-re',
+    '-i',
+    'data/processed/output_video.mp4',
+    '-c:v',
+    'libx264',
+    '-b:v',
+    '500k',
+    '-f',
+    'flv',
+    'rtmp://localhost/live/stream'
+])
+```
+
 
 ## 6. Conclusion
 
